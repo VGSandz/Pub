@@ -104,3 +104,10 @@ sudo mount -t cifs //<WindowsServer IP or Hostname>/Share /mnt/winshare -o usern
 ```
 
 Once the share is mounted, import the Zip file into BloodHound console.
+
+![image](https://github.com/VGSandz/Pub/assets/64747937/0b435cdb-1c14-477d-b4bc-5a8efbbfc219)
+
+Now we can graph the topics of interest!
+
+
+
