@@ -1,0 +1,8 @@
+#Installation of Bloodhound community installer on Kali
+sudo apt update && sudo apt install -y bloodhound
+
+#Start the neo4j 
+sudo neo4j console
+
+#console URL
+Remote interface available at http://localhost:7474/
