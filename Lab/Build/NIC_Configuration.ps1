@@ -27,7 +27,7 @@ $networkInterface | Set-DnsClientServerAddress -ServerAddresses $dnsServers
 $networkInterface | Set-DnsClient -ConnectionSpecificSuffix $dnsSuffix
 
 # Append the new DNS suffix.
-Set-DnsClientGlobalSetting -SuffixSearchList @(“$dnsSuffix”)
+Set-DnsClientGlobalSetting -SuffixSearchList @("$dnsSuffix")
 
 # Disable IPv6.
 $networkInterface | Disable-NetAdapterBinding -ComponentID ms_tcpip6
