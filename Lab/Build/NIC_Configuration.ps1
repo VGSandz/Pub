@@ -5,10 +5,10 @@ $VMNIC =  Get-NetAdapter
 $interfaceName = $VMNIC.Name
 
 # Static IP configuration.
-$ipAddress = "192.168.6.10"
+$ipAddress = "192.168.1.10"
 
 $subnetMask = "255.255.255.0"
-$dnsServers = "192.168.6.10"
+$dnsServers = "192.168.1.10"
 $dnsSuffix = "labone.local"
 
 # Get the network interface.
@@ -18,7 +18,7 @@ $networkInterface = Get-NetAdapter | Where-Object { $_.Name -eq $interfaceName }
 $networkInterface | Set-NetIPInterface -Dhcp Disabled
 
 # Set the IP address and subnet mask.
-$networkInterface | New-NetIPAddress -IPAddress $ipAddress -PrefixLength 24 # -DefaultGateway "192.168.1.1"
+$networkInterface | New-NetIPAddress -IPAddress $ipAddress -PrefixLength 24 -DefaultGateway "192.168.1.1"
 
 # Set DNS servers.
 $networkInterface | Set-DnsClientServerAddress -ServerAddresses $dnsServers
