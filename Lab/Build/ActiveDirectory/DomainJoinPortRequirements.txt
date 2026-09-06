@@ -1,0 +1,86 @@
+====================================================================
+ FIREWALL PORTS: CLIENT <-> DOMAIN CONTROLLER
+====================================================================
+====================================================================
+SECTION 1: CLIENT --> DOMAIN CONTROLLER
+(Standard AD authentication, LDAP, GPO/SYSVOL)
+====================================================================
+
+Direction: Client initiates -> DC responds
+(A stateful firewall, including Windows Firewall, handles the
+return traffic on the same session automatically. No separate
+inbound rule is needed on the client for these.)
+
+Service                        Port            Protocol
+--------------------------------------------------------------------
+DNS                             53              TCP/UDP
+Kerberos Authentication         88              TCP/UDP
+NTP (time sync)                 123             UDP
+RPC Endpoint Mapper             135             TCP
+NetBIOS Name Service            137             UDP    (legacy/optional)
+NetBIOS Datagram Service        138             UDP    (legacy/optional)
+NetBIOS Session Service         139             TCP    (legacy/optional)
+LDAP                            389             TCP/UDP
+LDAP over SSL (LDAPS)           636             TCP    (only if LDAPS enforced)
+SMB (SYSVOL / NETLOGON shares)  445             TCP
+Kerberos Password Change        464             TCP/UDP
+Global Catalog LDAP             3268            TCP    (multi-domain forest only)
+Global Catalog LDAP over SSL    3269            TCP    (multi-domain forest only)
+AD Web Services                 9389            TCP    (RSAT / AD PowerShell module)
+RPC Dynamic Port Range          49152-65535     TCP    (GPO processing, WMI, misc RPC)
+
+Hardening notes:
+- Ports 137-139 (NetBIOS) can usually be dropped entirely in a
+  modern, all-Windows / DNS-only environment.
+- The RPC dynamic range can be narrowed below 49152-65535 via
+  registry (HKLM\SOFTWARE\Microsoft\Rpc\Internet) or GPO if you
+  want a tighter band for stricter firewalling.
+- 636 / 3269 only matter if you've deployed a certificate on the
+  DC and are actually enforcing signed/encrypted LDAP.
+
+
+====================================================================
+SECTION 2: DOMAIN CONTROLLER --> CLIENT
+(Remote management only - NOT part of normal AD auth/GPO flow)
+====================================================================
+
+Direction: DC / admin workstation initiates -> Client responds
+IMPORTANT: These ports are OFF by default in the client's Windows
+Firewall. They must be pushed via GPO. Microsoft ships a Starter
+GPO called "Group Policy Remote Update Firewall Ports" that covers
+the Remote GPUpdate rows below.
+
+Scenario                                     Port                 Protocol
+--------------------------------------------------------------------------
+Remote GPUpdate - RPC Endpoint Mapper        135                  TCP
+Remote GPUpdate - Task Scheduler (RPC)       49152-65535          TCP
+Remote GPUpdate - WMI call                   49152-65535          TCP
+                                              (MS docs list as "all ports")
+PsExec / SC.exe - Admin$ share               445                  TCP
+PsExec / SC.exe - Service Control Mgr (RPC)  135 + 49152-65535    TCP
+Remote Registry / Remote Event Viewer        445 + 135 + 49152-65535  TCP
+WinRM / PowerShell Remoting (HTTP)           5985                 TCP
+WinRM / PowerShell Remoting (HTTPS)          5986                 TCP
+RDP to the client                            3389                 TCP
+ICMP Echo (ping troubleshooting)             n/a                  ICMP
+
+Predefined Windows Firewall rule groups to enable via GPO:
+- Remote Scheduled Tasks Management (RPC)
+- Remote Scheduled Tasks Management (RPC-EPMAP)
+- Windows Management Instrumentation (WMI-In)
+
+
+====================================================================
+NOTES
+====================================================================
+- Section 1 covers everyday AD operations: logon, Kerberos auth,
+  LDAP queries, GPO/SYSVOL retrieval, password changes.
+- Section 2 only applies if you are actively managing clients FROM
+  the DC or an admin box (remote GPUpdate, PsExec, WinRM, RDP).
+  Do not open these broadly across the whole client VLAN - restrict
+  to your management subnet / jump box only.
+- Reference docs: Microsoft "Active Directory and Active Directory
+  Domain Services Port Requirements" and "Configure Firewall Port
+  Requirements for Group Policy".
+
+Generated for WindowsTech (@ItsWindowsTech)
