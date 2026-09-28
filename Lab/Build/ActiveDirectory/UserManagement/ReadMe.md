@@ -31,6 +31,7 @@ name, so the same sheet runs unchanged on labdomain.info or any other lab.
 
 ## Users
 
+```powershell
 ## Setup (run once per session)
 
 $DomainDN   = (Get-ADDomain).DistinguishedName   # e.g. DC=contoso,DC=com
